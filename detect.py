@@ -13,9 +13,6 @@ from tracker import Tracker
 import numpy as np
 from PIL import Image
 
-from mtcnn_cv2 import MTCNN
-
-face_detector = MTCNN()
 
 # Initialize Tracker
 tracker = Tracker()
@@ -27,6 +24,27 @@ def image_to_base64(img: np.ndarray) -> str:
     img_buffer = cv2.imencode('.jpg', img)[1]
     return base64.b64encode(img_buffer).decode('utf-8')
 
+def track_person(detection, image_width):
+	'''
+	If a detection contains a person, track the person either left or right
+	Args:
+	detection A detected object as the result of an ObjectDetector.
+		bounding_box: Rect
+		categories: List[Category]
+	image_width The original image width in pixels
+	Output:
+	direction: Either 'left','right' or 'centre'
+	'''
+	if detection.classification[0].label == 'person':
+		box_centre = (detection.bounding_box.right + detection.bounding_box.left)/2
+		if box_centre <= image_width*0.3:
+			direction = 'left'
+		if box_centre >= image_width*0.7:
+			direction = 'right'
+		else:
+			direction = 'centre'
+	return direction
+		
 
 def run(
 	model: str,
@@ -90,22 +108,12 @@ def run(
 		# Run object detection estimation using the model.
 		detections = detector.detect(image)
 
-		result = face_detector.detect_faces(image)
-
-		if len(result) > 0:
-			for face in result:
-				keypoints = face['keypoints']
-				# Place a rectangle around detected faces
-				cv2.rectangle(image, face['box'], (0, 155, 255), 0)
-				# Place dots on face features
-				for key, face_feature in face['keypoints'].items():
-					cv2.circle(image, face_feature, 2, (0,155,255), 2)
-
 		bboxes = []
 		confidences = []
 		class_ids = []
 
 		for detection in detections:
+			breakpoint()
 			bboxes.append(detection.bounding_box)
 			confidences.append(detection.categories[0].score)
 			class_ids.append(detection.categories[0].label)
@@ -156,7 +164,7 @@ def main():
 		'--model',
 		help='Path of the object detection model.',
 		required=False,
-		default='cv/efficientdet_lite0.tflite')
+		default='mil_obj_det_efficientdet_lite_v0.tflite')
 	parser.add_argument(
 		'--cameraId', help='Id of camera.', required=False, type=int, default=0)
 	parser.add_argument(
@@ -191,3 +199,4 @@ def main():
 
 if __name__ == '__main__':
 	main()
+

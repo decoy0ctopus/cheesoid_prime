@@ -161,23 +161,24 @@ def avoidobstacle():
         time.sleep(turntime*2)
     stopmotors()
 
+def run():
+	# Your code to control the robot goes below this line
+	try:
+		# Set trigger to False (Low)
+		GPIO.output(pinTrigger, False)
 
-# Your code to control the robot goes below this line
-try:
-    # Set trigger to False (Low)
-    GPIO.output(pinTrigger, False)
+		# Allow module to settle
+		time.sleep(0.1)
 
-    # Allow module to settle
-    time.sleep(0.1)
+		# repeat the next indented block forever
+		while True:
+			forwards()
+			time.sleep(0.5)
+			if isnearobstacle(hownear):
+				stopmotors()
+				avoidobstacle()
 
-    # repeat the next indented block forever
-    while True:
-        forwards()
-        time.sleep(0.1)
-        if isnearobstacle(hownear):
-            stopmotors()
-            avoidobstacle()
-
-# If you press CTRL+C, cleanup and stop
-except KeyboardInterrupt:
-    GPIO.cleanup()
+	# If you press CTRL+C, cleanup and stop
+	except KeyboardInterrupt:
+		GPIO.cleanup()
+		
