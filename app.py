@@ -11,8 +11,6 @@ from mtcnn_cv2 import MTCNN
 
 face_detector = MTCNN()
 
-# Variables to calculate FPS
-counter, fps = 0, 0
 
 # Start capturing video input from the camera
 cap = cv2.VideoCapture(0)
@@ -38,6 +36,9 @@ def run(camera_id: int, width: int, height: int,) -> None:
 
     start_time = time.time()
     frame_lim = 5
+
+    # Variables to calculate FPS
+    counter, fps = 0, 0
 
     while cap.isOpened():
         success, image = cap.read()
