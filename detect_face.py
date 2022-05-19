@@ -8,6 +8,7 @@ from mtcnn_cv2 import MTCNN
 
 face_detector = MTCNN()
 
+# @profile
 def run(camera_id: int, width: int, height: int,) -> None:
     """Continuously run inference on images acquired from the camera.
 
@@ -34,14 +35,21 @@ def run(camera_id: int, width: int, height: int,) -> None:
     fps_avg_frame_count = 10
 
     start_time = time.time()
-    frame_lim = 5
+    c_time = time.time()
+    lim_time = 0.13
 
     while cap.isOpened():
-        success, image = cap.read()
-        counter += 1
+        if time.time() - c_time < lim_time:
+            time.sleep(lim_time) 
+            c_time = time.time()
 
-        if counter % frame_lim != 0:
-            continue
+        counter += 1
+        # if counter % frame_lim != 0:
+        #     print(counter)
+        #     continue
+
+        success, image = cap.read()
+
 
         if not success:
             sys.exit('ERROR: Unable to read from webcam.')
@@ -51,7 +59,7 @@ def run(camera_id: int, width: int, height: int,) -> None:
         if len(result) > 0:
             for face in result:
                 # Place a rectangle around detected faces
-                cv2.rectangle(image, face['box'], (0, 155, 255), 0)
+                cv2.rectangle(image, face['box'], (0, 155, 255), 2)
                 # Place dots on face features
                 for _, face_feature in face['keypoints'].items():
                     cv2.circle(image, face_feature, 2, (0,155,255), 2)
@@ -59,11 +67,8 @@ def run(camera_id: int, width: int, height: int,) -> None:
         # Calculate the FPS
         if counter % fps_avg_frame_count == 0:
             fps = fps_avg_frame_count / (time.time() - start_time)
-            fps = fps / frame_lim
-
             start_time = time.time()
         
-
         # Show the FPS
         fps_text = 'FPS = {:.1f}'.format(fps)
         text_location = (left_margin, row_size)
