@@ -1,9 +1,8 @@
 import argparse
 import sys
 import time
-import numpy as np
 import cv2
-import base64
+from queue import Queue
 
 from mtcnn_cv2 import MTCNN
 
@@ -20,7 +19,6 @@ def run(camera_id: int, width: int, height: int,) -> None:
 
     # Variables to calculate FPS
     counter, fps = 0, 0
-    start_time = time.time()
 
     # Start capturing video input from the camera
     cap = cv2.VideoCapture(camera_id)
@@ -35,36 +33,32 @@ def run(camera_id: int, width: int, height: int,) -> None:
     font_thickness = 3
     fps_avg_frame_count = 10
 
-    frame_stack = []
+    start_time = time.time()
+    frame_lim = 20
 
     while cap.isOpened():
         success, image = cap.read()
-
-        if len(frame_stack) < 3:
-            frame_stack.append(image)
-
-        image = frame_stack.pop()
+        counter += 1
+        if counter % frame_lim != 0:
+            continue
 
         if not success:
-            sys.exit(
-            'ERROR: Unable to read from webcam. Please verify your webcam settings.'
-            )
+            sys.exit('ERROR: Unable to read from webcam.')
 
-        counter += 1
         result = face_detector.detect_faces(image)
 
         if len(result) > 0:
             for face in result:
-                keypoints = face['keypoints']
                 # Place a rectangle around detected faces
                 cv2.rectangle(image, face['box'], (0, 155, 255), 0)
                 # Place dots on face features
-                for key, face_feature in face['keypoints'].items():
+                for _, face_feature in face['keypoints'].items():
                     cv2.circle(image, face_feature, 2, (0,155,255), 2)
 
         # Calculate the FPS
         if counter % fps_avg_frame_count == 0:
             fps = fps_avg_frame_count / (time.time() - start_time)
+            fps = fps / frame_lim
             start_time = time.time()
 
         # Show the FPS
