@@ -16,6 +16,7 @@ face_detector = MTCNN()
 cap = cv2.VideoCapture(0)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
 
 def run(camera_id: int, width: int, height: int,) -> None:
     """Continuously run inference on images acquired from the camera.
@@ -42,6 +43,7 @@ def run(camera_id: int, width: int, height: int,) -> None:
 
     while cap.isOpened():
         success, image = cap.read()
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         counter += 1
 
         if counter % frame_lim != 0:
