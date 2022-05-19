@@ -28,15 +28,22 @@ def run(camera_id: int, width: int, height: int,) -> None:
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
     # Visualization parameters
-    row_size = 20  # pixels
+    row_size = 30  # pixels
     left_margin = 24  # pixels
-    text_color = (0, 0, 255)  # red
-    font_size = 1
-    font_thickness = 1
+    text_color = (0, 0, 0)  # red
+    font_size = 2
+    font_thickness = 3
     fps_avg_frame_count = 10
+
+    frame_stack = []
 
     while cap.isOpened():
         success, image = cap.read()
+
+        if len(frame_stack) < 3:
+            frame_stack.append(image)
+
+        image = frame_stack.pop()
 
         if not success:
             sys.exit(
@@ -63,7 +70,6 @@ def run(camera_id: int, width: int, height: int,) -> None:
         # Show the FPS
         fps_text = 'FPS = {:.1f}'.format(fps)
         text_location = (left_margin, row_size)
-        print(fps_text)
         cv2.putText(image, fps_text, text_location, cv2.FONT_HERSHEY_PLAIN,
                 font_size, text_color, font_thickness)
 
@@ -81,7 +87,11 @@ def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
-        '--cameraId', help='Id of camera.', required=False, type=int, default=0)
+        '--cameraId',
+        help='Id of camera.',
+        required=False,
+        type=int,
+        default=0)
     parser.add_argument(
         '--frameWidth',
         help='Width of frame to capture from camera.',
