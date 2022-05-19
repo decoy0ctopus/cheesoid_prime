@@ -34,11 +34,12 @@ def run(camera_id: int, width: int, height: int,) -> None:
     fps_avg_frame_count = 10
 
     start_time = time.time()
-    frame_lim = 20
+    frame_lim = 5
 
     while cap.isOpened():
         success, image = cap.read()
         counter += 1
+
         if counter % frame_lim != 0:
             continue
 
@@ -59,7 +60,9 @@ def run(camera_id: int, width: int, height: int,) -> None:
         if counter % fps_avg_frame_count == 0:
             fps = fps_avg_frame_count / (time.time() - start_time)
             fps = fps / frame_lim
+
             start_time = time.time()
+        
 
         # Show the FPS
         fps_text = 'FPS = {:.1f}'.format(fps)
