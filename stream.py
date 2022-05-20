@@ -2,6 +2,7 @@ import cv2  # OpenCV library
 import time # time library
 from threading import Thread # library for multi-threading
 
+from mtcnn_cv2 import MTCNN
 
 # defining a helper class for implementing multi-threading 
 class WebcamStream :
@@ -9,8 +10,8 @@ class WebcamStream :
     def __init__(self, stream_id=0):
         self.stream_id = stream_id # default is 0 for main camera 
         
-        # self.vcap = cv2.VideoCapture(self.stream_id)
-        self.vcap = cv2.VideoCapture("face.mp4")
+        self.vcap = cv2.VideoCapture(self.stream_id)
+        # self.vcap = cv2.VideoCapture("face.mp4")
 
         if self.vcap.isOpened() is False :
             print("[Exiting]: Error accessing webcam stream.")
@@ -55,6 +56,9 @@ class WebcamStream :
     def stop(self):
         self.stopped = True
 
+
+face_detector = MTCNN()
+
 # initializing and starting multi-threaded webcam input stream 
 webcam_stream = WebcamStream(stream_id=0) # 0 id for main camera
 webcam_stream.start()
@@ -67,6 +71,16 @@ while True :
         break
     else :
         frame = webcam_stream.read()
+
+    result = face_detector.detect_faces(frame)
+
+    if len(result) > 0:
+        for face in result:
+            # Place a rectangle around detected faces
+            cv2.rectangle(frame, face['box'], (0, 155, 255), 2)
+            # Place dots on face features
+            for _, face_feature in face['keypoints'].items():
+                cv2.circle(frame, face_feature, 2, (0,155,255), 2)
 
     # adding a delay for simulating video processing time 
     num_frames_processed += 1
